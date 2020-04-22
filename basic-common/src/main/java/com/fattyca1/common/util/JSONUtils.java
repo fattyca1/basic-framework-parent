@@ -25,8 +25,9 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 1.0
  */
 @Slf4j
-public class JsonUtils {
+public class JSONUtils {
 
     /**
      * 初始化实例
@@ -60,8 +61,8 @@ public class JsonUtils {
     /**
      * <br>构造函数私有化</br>
      */
-    private JsonUtils() {
-        throw new UnsupportedOperationException("u can't instantiate me...");
+    private JSONUtils() {
+        throw new UnsupportedOperationException("illegal operate");
     }
 
 
@@ -107,7 +108,7 @@ public class JsonUtils {
             return null;
         }
 
-        JsonNode node = JsonUtils.json2obj(jsonSrc, JsonNode.class);
+        JsonNode node = JSONUtils.json2obj(jsonSrc, JsonNode.class);
         if (null == node) {
             return null;
         }
@@ -141,6 +142,7 @@ public class JsonUtils {
         return t;
     }
 
+
     /**
      * <br> obj2T(将一般对象转为泛型)</br>
      *
@@ -171,7 +173,7 @@ public class JsonUtils {
     public static <T> List<T> json2list(String jsonStr, Class<T> clazz) {
 
         if (StringUtils.isEmpty(jsonStr)) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<Map<String, Object>> list = null;
@@ -182,11 +184,9 @@ public class JsonUtils {
             log.error("Parse json to list error", e);
         }
 
-        if (list == null) {
-            return null;
-        }
-
-        return list.stream().map(o -> map2obj(o, clazz)).collect(Collectors.toList());
+        return Optional.ofNullable(list)
+                .map(o -> o.stream().map(t -> map2obj(t, clazz)).collect(Collectors.toList()))
+                .orElseGet(ArrayList::new);
     }
 
     /**
@@ -217,10 +217,12 @@ public class JsonUtils {
         module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateUtils.YYYY_MM_DD_HH_MM_SS_FORMAT));
         module.addSerializer(LocalDate.class, new LocalDateSerializer(DateUtils.YYYY_MM_DD_FORMAT));
         module.addSerializer(LocalTime.class, new LocalTimeSerializer(DateUtils.HH_MM_SS_FORMAT));
+
         module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateUtils.YYYY_MM_DD_HH_MM_SS_FORMAT));
         module.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateUtils.YYYY_MM_DD_FORMAT));
         module.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateUtils.HH_MM_SS_FORMAT));
         module.addSerializer(Long.class, ToStringSerializer.instance);
+
         OBJECT_MAPPER.registerModule(new JavaTimeModule());
         OBJECT_MAPPER.registerModule(module);
     }

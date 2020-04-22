@@ -9,7 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>framework-springcloud-dependencies</artifactId>
+  <artifactId>spring-cloud-dependencies</artifactId>
   <packaging>pom</packaging>
 
   <dependencyManagement>

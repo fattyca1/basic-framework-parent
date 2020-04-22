@@ -17,10 +17,10 @@
   <name>basic-framework</name>
 
   <modules>
-    <module>framework-springcloud-dependencies</module>
-    <module>framework-common</module>
-    <module>framework-starter</module>
-    <module>framework-spring-alibaba-denpendencies</module>
+    <module>spring-cloud-dependencies</module>
+    <module>basic-common</module>
+    <module>basic-usual-starter</module>
+    <module>spring-alibaba-denpendencies</module>
   </modules>
 
   <properties>

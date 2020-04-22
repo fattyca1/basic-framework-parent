@@ -1,7 +1,7 @@
 package com.fattyca1.log.aop;
 
 import com.fattyca1.common.util.CollectionUtils;
-import com.fattyca1.common.util.JsonUtils;
+import com.fattyca1.common.util.JSONUtils;
 import com.fattyca1.common.util.StringUtils;
 import com.fattyca1.common.util.web.RequestUtils;
 import lombok.AllArgsConstructor;
@@ -47,9 +47,9 @@ public class MethodAopHandler implements MethodInterceptor {
         boolean yes = whetherOutputFullLog(method.getDeclaringClass().getName());
 
         if (yes) {
-            outputFullLog(methodName, className, Arrays.toString(methodInvocation.getArguments()), (endTime - beginTime), JsonUtils.obj2json(retVal));
+            outputFullLog(methodName, className, Arrays.toString(methodInvocation.getArguments()), (endTime - beginTime), JSONUtils.obj2json(retVal));
         } else {
-            outputPartLog(methodName, className, Arrays.toString(methodInvocation.getArguments()), (endTime - beginTime), JsonUtils.obj2json(retVal));
+            outputPartLog(methodName, className, Arrays.toString(methodInvocation.getArguments()), (endTime - beginTime), JSONUtils.obj2json(retVal));
         }
         return retVal;
 
@@ -66,7 +66,7 @@ public class MethodAopHandler implements MethodInterceptor {
                 .map(ServletRequestAttributes::getRequest);
 
         String address = request.map(RequestUtils::getRemoteAddr).orElseGet(RequestUtils::getLocalAddress);
-        String head = headPrint ? request.map(RequestUtils::obtainRequestHeadInfo).map(JsonUtils::obj2json).orElse("") : "";
+        String head = headPrint ? request.map(RequestUtils::obtainRequestHeadInfo).map(JSONUtils::obj2json).orElse("") : "";
         String requestUri = request.map(HttpServletRequest::getRequestURI).orElse("");
         log.info( headPrint ? "head:[{}] " : "{} " +  "address:[{}] method:[{}.{}] requestUrl:[{}] take times[{} ms] arguments:{} return:{}", headPrint ? head : "",
                 address, className, methodName, requestUri, costTime, StringUtils.abbreviate(args, argsLen), StringUtils.abbreviate(retVal, argsLen));

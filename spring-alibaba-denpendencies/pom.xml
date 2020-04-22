@@ -8,7 +8,7 @@
   <artifactId>framework-spring-alibaba-denpendencies</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>framework-spring-alibaba-denpendencies</name>
+  <name>spring-alibaba-denpendencies</name>
 
   <dependencyManagement>
     <dependencies>
