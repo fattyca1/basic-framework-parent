@@ -1,16 +1,8 @@
 package com.fattyca1.common.util;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,16 +12,18 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 
 /**
  * <br>JSON工具类</br>
@@ -81,20 +75,15 @@ public class JSONUtils {
      *
      * @return java.lang.String
      */
-    public static String obj2json(Object obj) {
-
-        if (obj == null) {
+    public static String toJson(Object obj) {
+        return Optional.ofNullable(obj).map(o -> {
+            try {
+                return OBJECT_MAPPER.writeValueAsString(obj);
+            } catch (JsonProcessingException e) {
+                log.error("parser error", e);
+            }
             return null;
-        }
-
-        String json = null;
-        try {
-            json = OBJECT_MAPPER.writeValueAsString(obj);
-        } catch (Exception e) {
-            log.error("Parse object to json error", e);
-        }
-
-        return json;
+        }).orElse(null);
     }
 
     /**
@@ -102,23 +91,12 @@ public class JSONUtils {
      *
      * @param jsonSrc, jsonKey
      */
-    public static String getJsonValue(String jsonSrc, String jsonKey) {
+    public static String getValue(String jsonSrc, String jsonKey) {
+        return Optional.ofNullable(JSONUtils.toObj(jsonSrc, JsonNode.class))
+                .map(n -> n.get(jsonKey))
+                .map(JsonNode::toString)
+                .orElse(null);
 
-        if (StringUtils.isEmpty(jsonSrc) || StringUtils.isEmpty(jsonKey)) {
-            return null;
-        }
-
-        JsonNode node = JSONUtils.json2obj(jsonSrc, JsonNode.class);
-        if (null == node) {
-            return null;
-        }
-
-        JsonNode dataNode = node.get(jsonKey);
-        if (null == dataNode) {
-            return null;
-        }
-
-        return dataNode.toString();
     }
 
     /**
@@ -126,42 +104,40 @@ public class JSONUtils {
      *
      * @param jsonStr, clazz
      */
-    public static <T> T json2obj(String jsonStr, Class<T> clazz) {
+    public static <T> T toObj(String jsonStr, Class<T> clazz) {
+        return convert(jsonStr, clazz, OBJECT_MAPPER::readValue);
+    }
 
-        if (StringUtils.isEmpty(jsonStr)) {
+    /**
+     * <br>Map转换成obj对象</br>
+     *
+     * @param clazz 类型
+     * @return T
+     */
+    private static <T> T toObj(Object o, Class<T> clazz) {
+        return JSONUtils.toObj(toJson(o), clazz);
+    }
+
+
+    @FunctionalInterface
+    interface BiFunctionWithException<T,U,R>{
+        R apply(T t, U u) throws Exception;
+    }
+
+    private static <O,T> T convert(O object, Class<T> c1, BiFunctionWithException<O ,Class<T>, T> biFunction) {
+
+        if (Objects.isNull(object)) {
+            log.info("Parser object is null");
             return null;
         }
 
-        T t = null;
         try {
-            t = OBJECT_MAPPER.readValue(jsonStr, clazz);
+            return biFunction.apply(object, c1);
         } catch (Exception e) {
             log.error("Parse json to object error", e);
         }
 
-        return t;
-    }
-
-
-    /**
-     * <br> obj2T(将一般对象转为泛型)</br>
-     *
-     * @param obj, clazz
-     */
-    public static <T> T obj2T(Object obj, Class<T> clazz) {
-
-        if (null == obj) {
-            return null;
-        }
-
-        T t = null;
-        try {
-            t = OBJECT_MAPPER.readValue(obj2json(obj), clazz);
-        } catch (IOException e) {
-            log.warn("Parse json to object error", e);
-        }
-
-        return t;
+        return null;
     }
 
     /**
@@ -170,7 +146,7 @@ public class JSONUtils {
      * @param jsonStr, clazz
      * @return java.util.List<T>
      */
-    public static <T> List<T> json2list(String jsonStr, Class<T> clazz) {
+    public static <T> List<T> toList(String jsonStr, Class<T> clazz) {
 
         if (StringUtils.isEmpty(jsonStr)) {
             return Collections.emptyList();
@@ -185,32 +161,9 @@ public class JSONUtils {
         }
 
         return Optional.ofNullable(list)
-                .map(o -> o.stream().map(t -> map2obj(t, clazz)).collect(Collectors.toList()))
+                .map(o -> o.stream().map(t -> toObj(t, clazz)).collect(Collectors.toList()))
                 .orElseGet(ArrayList::new);
     }
-
-    /**
-     * <br>Map转换成obj对象</br>
-     *
-     * @param clazz 类型
-     * @return T
-     */
-    private static <T> T map2obj(@SuppressWarnings("rawtypes") Map map, Class<T> clazz) {
-
-        return OBJECT_MAPPER.convertValue(map, clazz);
-    }
-
-
-    /**
-     * <br>Obj转换成map对象</br>
-     *
-     * @return T
-     */
-    public static Map pojo2map(Object obj) {
-
-        return OBJECT_MAPPER.convertValue(obj, Map.class);
-    }
-
 
     private static void registerModule() {
         SimpleModule module = new SimpleModule();
