@@ -1,6 +1,8 @@
 package com.fattyca1.redis.properties;
 
 import lombok.Data;
+import org.redisson.api.RedissonClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -10,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "redisson.lock")
 @Data
+@ConditionalOnBean(RedissonClient.class)
 public class LockProperties {
 
     /**
@@ -20,4 +23,7 @@ public class LockProperties {
      * 获取锁最长等待时间 5秒
      */
     private Integer waitTime = 5;
+
+    /** 锁类型 */
+    private Boolean fair;
 }
