@@ -15,6 +15,7 @@
   <modules>
     <module>log-spring-starter</module>
     <module>redis-spring-starter</module>
+    <module>http-spring-starter</module>
   </modules>
 
   <dependencies>
