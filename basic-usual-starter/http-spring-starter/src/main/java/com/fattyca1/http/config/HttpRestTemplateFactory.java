@@ -16,7 +16,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 /**
  * <br>工厂</br>
  *
- * @author lifacheng
+ * @author fattyca1
  */
 @Slf4j
 @Configuration

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Primary;
 /**
  * <br>配置文件</br>
  *
- * @author lifacheng
+ * @author fattyca1
  */
 @Data
 @Primary

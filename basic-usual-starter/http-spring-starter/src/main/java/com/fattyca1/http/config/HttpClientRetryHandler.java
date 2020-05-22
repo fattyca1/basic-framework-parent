@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
 /**
  * <br>重试处理</br>
  *
- * @author lifacheng
+ * @author fattyca1
  */
 public class HttpClientRetryHandler implements HttpRequestRetryHandler {
 
