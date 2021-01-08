@@ -12,16 +12,16 @@
   </parent>
 
   <groupId>com.basicframework</groupId>
-  <artifactId>basic-framework-parent</artifactId>
+  <artifactId>framework-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <name>basic-framework</name>
 
   <modules>
+    <module>framework-common</module>
+    <module>framework-components</module>
     <module>spring-cloud-dependencies</module>
-    <module>basic-common</module>
-    <module>basic-usual-starter</module>
-    <module>spring-alibaba-dependencies</module>
+    <module>spring-ali-dependencies</module>
   </modules>
 
   <properties>
