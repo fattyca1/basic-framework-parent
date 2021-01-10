@@ -1,7 +1,7 @@
 package com.fattyca1.log.config;
 
 import com.fattyca1.log.aop.MethodAopHandler;
-import com.fattyca1.log.properties.LogAopProperties;
+import com.fattyca1.log.properties.LogProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
@@ -17,14 +17,14 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class AopLogExpressionPointcutAdvisor extends AspectJExpressionPointcutAdvisor implements InitializingBean{
+public class LogAdvisor extends AspectJExpressionPointcutAdvisor implements InitializingBean{
 
-    private final LogAopProperties prop;
+    private final LogProperties.LogConfig config;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.setAdvice(new MethodAopHandler(prop.getExcludePackage(), prop.isHeadPrint(), prop.getArgsLen()));
-        this.setExpression(prop.getExpression());
-        log.info("【spring log component】 init successful ...");
+        this.setAdvice(new MethodAopHandler(config));
+        this.setExpression(config.getPointCut());
+        log.info("【Spring log component, CutPoint {}】 init successful ...", config.getPointCut());
     }
 }

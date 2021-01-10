@@ -1,8 +1,8 @@
 package com.fattyca1.log.aop;
 
-import com.fattyca1.common.util.CollectionUtils;
 import com.fattyca1.common.util.JsonUtils;
 import com.fattyca1.common.util.web.RequestUtils;
+import com.fattyca1.log.properties.LogProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -14,7 +14,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -29,55 +28,40 @@ import java.util.Optional;
 @AllArgsConstructor
 public class MethodAopHandler implements MethodInterceptor {
 
-    private final List<String> excludePackage;
-    private final boolean headPrint;
-    private final Integer argsLen;
+    private final LogProperties.LogConfig logConfig;
 
     @Override
-    public Object invoke(MethodInvocation methodInvocation) throws Throwable {
+    public Object invoke(MethodInvocation invocation) throws Throwable {
 
-        Method method = methodInvocation.getMethod();
+        Method method = invocation.getMethod();
         String methodName = method.getName();
         String className = method.getDeclaringClass().getSimpleName();
 
         long beginTime = System.currentTimeMillis();
-        Object retVal = methodInvocation.proceed();
-        long endTime = System.currentTimeMillis();
+        Object retVal = invocation.proceed();
 
-        boolean yes = whetherOutputFullLog(method.getDeclaringClass().getName());
-
-        if (yes) {
-            outputFullLog(methodName, className, Arrays.toString(methodInvocation.getArguments()), (endTime - beginTime), JsonUtils.toJson(retVal));
-        } else {
-            outputPartLog(methodName, className, Arrays.toString(methodInvocation.getArguments()), (endTime - beginTime), JsonUtils.toJson(retVal));
-        }
+        log(methodName, className, Arrays.toString(invocation.getArguments()), (System.currentTimeMillis() - beginTime), JsonUtils.toJson(retVal));
         return retVal;
-
     }
 
-    private void outputPartLog(String methodName, String className, String argsStr, long costTime, String retValStr) {
-        log.info("method:[{}.{}]  take times[{}ms] arguments:{} return:{}", className, methodName, costTime, StringUtils.abbreviate(argsStr, argsLen), StringUtils.abbreviate(retValStr, argsLen));
-    }
-
-    private void outputFullLog(String methodName, String className, String args, long costTime, String retVal) {
+    private void log(String methodName, String className, String args, long costTime, String retVal) {
         // 判断是不是前端请求
         Optional<HttpServletRequest> request = Optional.ofNullable(RequestContextHolder.getRequestAttributes())
                 .map(req -> (ServletRequestAttributes) req)
                 .map(ServletRequestAttributes::getRequest);
 
         String address = request.map(RequestUtils::getRemoteAddr).orElseGet(RequestUtils::getLocalAddress);
-        String head = headPrint ? request.map(RequestUtils::obtainRequestHeadInfo).map(JsonUtils::toJson).orElse("") : "";
+        String head = logConfig.isLogHeader() ? request.map(RequestUtils::obtainRequestHeadInfo).map(JsonUtils::toJson).orElse("") : "";
         String requestUri = request.map(HttpServletRequest::getRequestURI).orElse("");
-        log.info( headPrint ? "head:[{}] " : "{} " +  "address:[{}] method:[{}.{}] requestUrl:[{}] take times[{} ms] arguments:{} return:{}", headPrint ? head : "",
-                address, className, methodName, requestUri, costTime, StringUtils.abbreviate(args, argsLen), StringUtils.abbreviate(retVal, argsLen));
+
+        log.info(logConfig.isLogHeader() ? "head:[{}] " : "{} "
+                        + (logConfig.isWeb() ? "address:[{}] requestUrl:[{}] " : "{}{}")
+                        + "method:[{}.{}]  cost times[{} ms] arguments:[{}] return:[{}]",
+                logConfig.isLogHeader() ? head : "",
+                logConfig.isWeb() ? address : "",
+                logConfig.isWeb() ? requestUri : "",
+                className, methodName, costTime,
+                StringUtils.abbreviate(args, logConfig.getLen()),
+                StringUtils.abbreviate(retVal, logConfig.getLen()));
     }
-
-    private boolean whetherOutputFullLog(String fullClassName) {
-        if (CollectionUtils.isEmpty(excludePackage)) {
-            return true;
-        }
-        return excludePackage.stream().noneMatch(prefix -> StringUtils.startsWith(fullClassName, prefix));
-    }
-
-
 }
