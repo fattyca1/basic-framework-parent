@@ -1,2 +1,2 @@
-#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-#  com.fattyca1.log.annotation.LogAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.fattyca1.log.LogHandlerAutoConfiguration

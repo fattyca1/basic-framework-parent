@@ -1,62 +1,73 @@
 package com.fattyca1.log.annotation;
 
-import com.fattyca1.log.config.LogAdvisor;
-import com.fattyca1.log.properties.LogProperties;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import com.fattyca1.log.LogHandlerAutoConfiguration;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.AnnotationMetadata;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
- * <br>注册日志</br>
+ * <br>注册Marker</br>
  *
  * @author fattyca1
  * @since 1.0
  */
-@Order(Ordered.LOWEST_PRECEDENCE)
-@Slf4j
-@Component
-//@EnableConfigurationProperties(LogProperties.class)
-public class LogHandlerRegistrar implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
+public class LogHandlerRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 
-//    @Autowired
-    private LogProperties logProp = new LogProperties();
+
+    private ResourceLoader resourceLoader;
+
+    private Environment environment;
 
 
     @Override
-    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        // 注册 CustomizedBeanDefinitionRegistryPostProcessor
-        int i = 0;
-        List<LogProperties.LogConfig> config = logProp.getConfig();
-        config.forEach(c -> registryBean(registry, c, i));
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
+    public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator) {
+
+        Map<String, Object> attributes = metadata.getAnnotationAttributes(EnableLog.class.getName());
+
+        AnnotationAttributes[] logCfg = ((AnnotationAttributes) attributes).getAnnotationArray("log");
+
+        Arrays.stream(logCfg).forEach(c -> {
+            registerBeanDefinition(registry, c);
+        });
+
+
+        AbstractBeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(LogHandlerAutoConfiguration.Marker.class).getBeanDefinition();
+        registry.registerBeanDefinition(LogHandlerAutoConfiguration.Marker.class.getName(), definition);
+    }
+
+    private void registerBeanDefinition(BeanDefinitionRegistry registry, AnnotationAttributes meta) {
+        int len = meta.getNumber("len").intValue();
+        boolean web = meta.getBoolean("web");
+        boolean logHeader = meta.getBoolean("logHeader");
+        meta.getString("packages");
+
 
     }
 
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        AnnotationConfigApplicationContext factory = (AnnotationConfigApplicationContext) applicationContext.getParentBeanFactory();
+    public boolean getLogHeader(AnnotationAttributes attributes){
+        return false;
     }
 
-    private void registryBean(BeanDefinitionRegistry registry, LogProperties.LogConfig config, int index) {
-        BeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(LogAdvisor.class).addConstructorArgValue(config).getBeanDefinition();
-        String beanName = LogAdvisor.class.getName() + index;
-        registry.registerBeanDefinition(beanName, definition);
-        log.debug("Log Aop bean name:{} registry successful.", beanName);
+    private String resolve(String value) {
+        if (StringUtils.isNotEmpty(value)) {
+            return this.environment.resolvePlaceholders(value);
+        }
+        return value;
     }
 }

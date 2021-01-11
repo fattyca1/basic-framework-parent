@@ -2,7 +2,6 @@ package com.fattyca1.log.aop;
 
 import com.fattyca1.common.util.JsonUtils;
 import com.fattyca1.common.util.web.RequestUtils;
-import com.fattyca1.log.properties.LogProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -28,7 +27,10 @@ import java.util.Optional;
 @AllArgsConstructor
 public class MethodAopHandler implements MethodInterceptor {
 
-    private final LogProperties.LogConfig logConfig;
+    private final boolean logHeader;
+    private final boolean web;
+    private final int len;
+
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
@@ -51,17 +53,17 @@ public class MethodAopHandler implements MethodInterceptor {
                 .map(ServletRequestAttributes::getRequest);
 
         String address = request.map(RequestUtils::getRemoteAddr).orElseGet(RequestUtils::getLocalAddress);
-        String head = logConfig.isLogHeader() ? request.map(RequestUtils::obtainRequestHeadInfo).map(JsonUtils::toJson).orElse("") : "";
+        String head = logHeader ? request.map(RequestUtils::obtainRequestHeadInfo).map(JsonUtils::toJson).orElse("") : "";
         String requestUri = request.map(HttpServletRequest::getRequestURI).orElse("");
 
-        log.info(logConfig.isLogHeader() ? "head:[{}] " : "{} "
-                        + (logConfig.isWeb() ? "address:[{}] requestUrl:[{}] " : "{}{}")
+        log.info(logHeader ? "head:[{}] " : "{} "
+                        + (web ? "address:[{}] requestUrl:[{}] " : "{}{}")
                         + "method:[{}.{}]  cost times[{} ms] arguments:[{}] return:[{}]",
-                logConfig.isLogHeader() ? head : "",
-                logConfig.isWeb() ? address : "",
-                logConfig.isWeb() ? requestUri : "",
+                logHeader ? head : "",
+                web ? address : "",
+                web ? requestUri : "",
                 className, methodName, costTime,
-                StringUtils.abbreviate(args, logConfig.getLen()),
-                StringUtils.abbreviate(retVal, logConfig.getLen()));
+                StringUtils.abbreviate(args, len),
+                StringUtils.abbreviate(retVal, len));
     }
 }

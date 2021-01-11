@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * <br>打印日志开关</br>
+ * <br>注解配置</br>
  *
  * @author fattyca1
  * @since 1.0
@@ -18,6 +18,24 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 @Import(LogHandlerRegistrar.class)
-public @interface EnableLog {
-    LogConfig[] log() default { @LogConfig()};
+public @interface LogConfig {
+    /**
+     * 是否打印头消息
+     */
+    boolean logHeader() default false;
+
+    /**
+     * 是否是web请求
+     */
+    boolean web() default false;
+
+    /**
+     * 日志长度
+     */
+    int len() default 1000;
+
+    /**
+     * 切入包
+     */
+    String[] packages() default {"com.fattyca1.*..*(..)"};
 }
