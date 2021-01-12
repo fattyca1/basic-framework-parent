@@ -1,5 +1,6 @@
 package com.fattyca1.log.annotation;
 
+import com.fattyca1.log.LogHandlerRegistrar;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -22,20 +23,20 @@ public @interface LogConfig {
     /**
      * 是否打印头消息
      */
-    boolean logHeader() default false;
+    String logHeader() default "false";
 
     /**
      * 是否是web请求
      */
-    boolean web() default false;
+    String web() default "false";
 
     /**
      * 日志长度
      */
-    int len() default 1000;
+    String len() default "1000";
 
     /**
      * 切入包
      */
-    String[] packages() default {"com.fattyca1.*..*(..)"};
+    String[] packages() default {"com.fattyca1.*..*.*(..)"};
 }

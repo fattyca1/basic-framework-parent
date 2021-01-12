@@ -1,10 +1,15 @@
 package com.fattyca1.log.config;
 
 import com.fattyca1.log.aop.MethodAopHandler;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.beans.factory.InitializingBean;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * <br>扩展</br>
@@ -14,22 +19,28 @@ import org.springframework.beans.factory.InitializingBean;
  * @date 2020/2/17
  * @since 1.0
  */
-@RequiredArgsConstructor
 @Slf4j
-public class LogAdvisor extends AspectJExpressionPointcutAdvisor implements InitializingBean{
+@Data
+public class LogAdvisor extends AspectJExpressionPointcutAdvisor implements InitializingBean {
 
-    private final boolean logHeader;
-    private final boolean web;
-    private final int len;
-    private final String pointCut;
+    private boolean logHeader;
+    private boolean web;
+    private int len;
+    private String[] packages;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         this.setAdvice(new MethodAopHandler(logHeader, web, len));
-        this.setExpression(getPointcut(pointCut));
+        this.setExpression(getPointCut(packages));
     }
 
-    private String getPointcut(String pointCut) {
-        return pointCut;
+    public String getPointCut(String[] packages){
+        if (ArrayUtils.isEmpty(packages)) {
+            return "execution(public * com.fattyca1..*.*(..))";
+        }
+
+        return Arrays.stream(packages).filter(StringUtils::isNotEmpty)
+                .map(s -> "execution(public * " + s + ")")
+                .collect(Collectors.joining("||"));
     }
 }

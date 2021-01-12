@@ -1,5 +1,6 @@
 package com.fattyca1.log.annotation;
 
+import com.fattyca1.log.LogHandlerRegistrar;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -19,5 +20,5 @@ import java.lang.annotation.Target;
 @Documented
 @Import(LogHandlerRegistrar.class)
 public @interface EnableLog {
-    LogConfig[] log() default { @LogConfig()};
+    LogConfig[] value() default { @LogConfig()};
 }
