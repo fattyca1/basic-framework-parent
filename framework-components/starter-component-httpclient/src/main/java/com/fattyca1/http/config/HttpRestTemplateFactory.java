@@ -1,17 +1,23 @@
 package com.fattyca1.http.config;
 
-import com.fattyca1.http.component.HttpRestTemplate;
+import com.fattyca1.http.component.RestTemplateWrapper;
 import com.fattyca1.http.properties.HttpClientProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+
+import java.util.Optional;
 
 /**
  * <br>工厂</br>
@@ -77,7 +83,7 @@ public class HttpRestTemplateFactory {
         connMgr.setDefaultMaxPerRoute(httpClientProperties.getMaxConnectionPerHost());
         b.setConnectionManager(connMgr);
         // 设置自定义重试次数
-        HttpRetryHandler httpRetryHandler = new HttpRetryHandler(httpClientProperties.getRetryTimes());
+        HttpClientRetryHandler httpRetryHandler = new HttpClientRetryHandler(httpClientProperties.getRetryTimes());
         b.setRetryHandler(httpRetryHandler);
         return b.build();
     }

@@ -1,7 +1,24 @@
 package com.fattyca1.http.component;
 
+import com.fattyca1.common.domain.Result;
+import com.fattyca1.common.exception.BizException;
+import com.fattyca1.common.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * <br>Http调用模块</br>
@@ -9,7 +26,7 @@ import org.springframework.web.client.RestTemplate;
  * @author fattyca1
  */
 @Slf4j
-public class HttpRestTemplate extends RestTemplate {
+public class RestTemplateWrapper extends RestTemplate {
 /**
      * 定制化  返回类型： {@link Result <T>}
      * @param url
@@ -22,7 +39,7 @@ public class HttpRestTemplate extends RestTemplate {
         return this.post(url, object, typeReference);
     }
 
-    private static class ResultParameterizedTypeReference<T> extends ParameterizedTypeReference<Result<T>>{
+    private static class ResultParameterizedTypeReference<T> extends ParameterizedTypeReference<Result<T>> {
         private ResultParameterizedTypeReference(){
         }
     }

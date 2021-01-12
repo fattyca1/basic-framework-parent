@@ -46,5 +46,15 @@ public class HttpClientProperties {
      */
     private Integer connectionTimeOut = 1000;
 
+    /**
+     * 代码host
+     */
+    private String httpProxyHost;
+
+    /**
+     * 代理端口
+     */
+    private Integer httpProxyPort;
+
 
 }
