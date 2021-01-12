@@ -14,7 +14,13 @@ public enum SystemStatusEnum implements BaseEnum<Integer> {
     /**
      * 接口熔断
      */
-    HYSTRIX_RETURN_CODE(600, "接口熔断"),
+    HYSTRIX_RETURN_CODE(602, "接口熔断"),
+
+    /**
+     * 业务异常
+     */
+    BUSINESS_ERROR(600, "业务异常"),
+
     /**
      * 服务器异常
      */
