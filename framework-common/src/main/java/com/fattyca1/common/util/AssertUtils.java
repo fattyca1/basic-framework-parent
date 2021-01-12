@@ -1,4 +1,29 @@
-public static void isNotNull(Object object, String errorCode, String errorMessage) {
+package com.fattyca1.common.util;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.fattyca1.common.base.BaseEnum;
+import com.fattyca1.common.domain.Result;
+import com.fattyca1.common.enums.SystemStatusEnum;
+import com.fattyca1.common.exception.BizException;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * <br>断言</br>
+ *
+ * @author fattyca1
+ * @since 1.0
+ */
+public class AssertUtils {
+
+    public static void isNotNull(Object object, String errorCode, String errorMessage) {
         if (object == null) {
             throw new BizException(errorCode, errorMessage);
         }
@@ -115,13 +140,13 @@ public static void isNotNull(Object object, String errorCode, String errorMessag
 
 
     public static void isNotEmpty(Map<?, ?> map, String errorCode, String errorMessage) {
-        if (CollectionUtils.isEmpty(map)) {
+        if (MapUtils.isEmpty(map)) {
             throw new BizException(errorCode, errorMessage);
         }
     }
 
     public static void isEmpty(Map<?, ?> map, String errorCode, String errorMessage) {
-        if (!CollectionUtils.isEmpty(map)) {
+        if (MapUtils.isNotEmpty(map)) {
             throw new BizException(errorCode, errorMessage);
         }
     }
@@ -202,32 +227,7 @@ public static void isNotNull(Object object, String errorCode, String errorMessag
         isContains(seq, searchSeq, null, errorMessage);
     }
 
-    public static void isSuccess(Result<?> result, String errorCode, String errorMessage) {
-        if (result == null || !result.isSuccess()) {
-            throw new BizException(errorCode, errorMessage);
-        }
-    }
 
-    public static void isSuccess(Result<?> result, String errorMessage) {
-        isSuccess(result, null, errorMessage);
-    }
-
-    public static void isSuccess(Result<?> result, BaseEnum<?> sysErrorCodeEnum) {
-        isSuccess(result, sysErrorCodeEnum.getCode().toString(), sysErrorCodeEnum.getDesc());
-    }
-
-    public static void isSuccess(String jsonResult, String errorCode, String errorMessage) {
-        Result<Object> result = JSON.parseObject(jsonResult, new TypeReference<Result<Object>>() {});
-        isSuccess(result, errorCode, errorMessage);
-    }
-
-    public static void isSuccess(String jsonResult, String errorMessage) {
-        isSuccess(jsonResult, null, errorMessage);
-    }
-
-    public static void isSuccess(String jsonResult, BaseEnum<?> sysErrorCodeEnum) {
-        isSuccess(jsonResult, sysErrorCodeEnum.getCode().toString(), sysErrorCodeEnum.getDesc());
-    }
 
     public static void isEquals(Object source, Object target, String errorCode, String errorMessage) {
         isTrue(Objects.equals(source, target), errorCode, errorMessage);
@@ -262,28 +262,10 @@ public static void isNotNull(Object object, String errorCode, String errorMessag
     public static void isSuccess(Result<?> result) {
         isNotNull(result, SystemStatusEnum.BUSINESS_ERROR);
         if (!result.isSuccess()) {
-            throw new BizException(result.getErrorCode(), result.getErrorMessage());
+            throw new BizException(result.getCode(), result.getMessage());
         }
     }
 
-    /**
-     * isSuccess扩展,null返回调用错误信息,success=false返回调用的错误码和错误信息
-     *
-     * @param result
-     * @param errorMessage
-     */
-    public static void isSuccessExt(Result<?> result, String errorMessage) {
-        isNotNull(result, errorMessage);
-        if (!result.isSuccess()) {
-            throw new BizException(result.getErrorCode(), result.getErrorMessage());
-        }
-    }
-
-    public static void isSuccessExt(String jsonResult, String errorMessage) {
-        Result<Objects> result = JSON.parseObject(jsonResult, new TypeReference<Result<Objects>>() {
-        });
-        isSuccessExt(result, errorMessage);
-    }
 
     public static void allNotBlank(BaseEnum<?> sysErrorCodeEnum, String... text) {
         allNotBlank(sysErrorCodeEnum.getCode().toString(), sysErrorCodeEnum.getDesc(), text);
@@ -294,3 +276,6 @@ public static void isNotNull(Object object, String errorCode, String errorMessag
             throw new BizException(errorCode, errorMessage);
         }
     }
+
+
+}

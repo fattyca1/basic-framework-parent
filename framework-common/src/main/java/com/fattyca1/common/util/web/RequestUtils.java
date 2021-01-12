@@ -66,11 +66,11 @@ public class RequestUtils {
             }
             Enumeration<NetworkInterface> n = NetworkInterface.getNetworkInterfaces();
             NETWORK_LOOP:
-            for (; n.hasMoreElements(); ) {
+            while (n.hasMoreElements()) {
                 NetworkInterface e = n.nextElement();
 
                 Enumeration<InetAddress> a = e.getInetAddresses();
-                for (; a.hasMoreElements(); ) {
+                while (a.hasMoreElements()) {
                     InetAddress addr = a.nextElement();
                     if (!addr.isLoopbackAddress() && !addr.isLinkLocalAddress() && addr.isSiteLocalAddress()) {
                         la = addr.getHostAddress();
