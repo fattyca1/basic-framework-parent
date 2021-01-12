@@ -1,5 +1,6 @@
 package com.fattyca1.common.domain;
 
+import com.fattyca1.common.base.BaseEnum;
 import com.fattyca1.common.util.JsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +18,6 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 public class Result<T> implements Serializable {
-
 
     private String requestId;
     /**
@@ -40,6 +40,23 @@ public class Result<T> implements Serializable {
      */
     private T data;
 
+
+    public Result(){
+        this(null, null, "", SUCCESS, null);
+    }
+
+    public Result(T data){
+        this(null, null, "", SUCCESS, data);
+    }
+
+    public Result(Object code, String msg){
+        this(null, code, msg, FAILURE, null);
+    }
+
+    public Result(BaseEnum<?> baseEnum) {
+        this(baseEnum.getCode(), baseEnum.getDesc());
+    }
+
     /**
      * 成功
      */
@@ -50,6 +67,25 @@ public class Result<T> implements Serializable {
     public static final boolean FAILURE = false;
 
 
+    public static Result<Void> success(){
+        return new Result<>();
+    }
+
+    public static <R> Result<R> success(R data){
+        return new Result<R>(data);
+    }
+
+    public static Result<Void> fail(Object code, String msg){
+        return new Result<>(code, msg);
+    }
+
+    public static Result<Void> fail(){
+        return new Result<>(null, null);
+    }
+
+    public static <R> Result<R> with(Object code, String msg, boolean success, R data) {
+        return new Result<R>(null, code, msg, success, data);
+    }
 
     @Override
     public String toString() {
