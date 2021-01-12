@@ -27,11 +27,21 @@ public class HttpRestTemplateFactory {
 
     private final HttpClientProperties httpClientProperties;
 
-    @Bean
-    public HttpRestTemplate getHttpRestTemplate() {
-        HttpRestTemplate restTemplate = new HttpRestTemplate();
+    @Bean("innerRestTemplate")
+    @Primary
+    public RestTemplateWrapper innerRestTemplate(@Qualifier("innerHttpClient") CloseableHttpClient innerHttpClient) {
+        return buildHttpRestTemplate(innerHttpClient);
+    }
+
+    @Bean("outerRestTemplate")
+    public RestTemplateWrapper outerRestTemplate(@Qualifier("outerHttpClient") CloseableHttpClient outerHttpClient) {
+        return buildHttpRestTemplate(outerHttpClient);
+    }
+
+    private RestTemplateWrapper buildHttpRestTemplate(CloseableHttpClient client) {
+        RestTemplateWrapper restTemplate = new RestTemplateWrapper();
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
-                = new HttpComponentsClientHttpRequestFactory(acceptsUntrustedCertsHttpClient(httpClientProperties.getRetryTimes()));
+                = new HttpComponentsClientHttpRequestFactory(client);
         // 连接超时
         clientHttpRequestFactory.setConnectTimeout(httpClientProperties.getConnectionTimeOut());
         // 数据读取超时时间
@@ -42,10 +52,24 @@ public class HttpRestTemplateFactory {
         return restTemplate;
     }
 
-    private CloseableHttpClient acceptsUntrustedCertsHttpClient(int retryTimes) {
+    @Bean("outerHttpClient")
+    public CloseableHttpClient outAcceptsUntrustedCertsHttpClient() {
+        HttpHost proxy = null;
+        if (StringUtils.isNotBlank(httpClientProperties.getHttpProxyHost()) && httpClientProperties.getHttpProxyPort() != null) {
+            proxy = new HttpHost(httpClientProperties.getHttpProxyHost(), httpClientProperties.getHttpProxyPort());
+        }
+        return createHttpClient(proxy);
+    }
 
+    @Bean("innerHttpClient")
+    public CloseableHttpClient innerAcceptsUntrustedCertsHttpClient() {
+        return createHttpClient(null);
+    }
+
+
+    private CloseableHttpClient createHttpClient(HttpHost proxy) {
         HttpClientBuilder b = HttpClientBuilder.create();
-
+        Optional.ofNullable(proxy).ifPresent(b::setProxy);
         PoolingHttpClientConnectionManager connMgr = new PoolingHttpClientConnectionManager();
         // 总连接数
         connMgr.setMaxTotal(httpClientProperties.getMaxTotalConnections());
@@ -53,10 +77,9 @@ public class HttpRestTemplateFactory {
         connMgr.setDefaultMaxPerRoute(httpClientProperties.getMaxConnectionPerHost());
         b.setConnectionManager(connMgr);
         // 设置自定义重试次数
-        HttpClientRetryHandler httpRetryHandler = new HttpClientRetryHandler(retryTimes);
+        HttpRetryHandler httpRetryHandler = new HttpRetryHandler(httpClientProperties.getRetryTimes());
         b.setRetryHandler(httpRetryHandler);
         return b.build();
     }
-
 
 }
