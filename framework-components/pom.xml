@@ -16,6 +16,7 @@
     <module>starter-component-log</module>
     <module>starter-component-redis</module>
     <module>starter-component-httpclient</module>
+    <module>starter-component-swagger</module>
   </modules>
 
   <dependencies>

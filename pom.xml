@@ -32,11 +32,11 @@
     <dependencies>
 
       <!-- http -->
-      <dependency>
-        <groupId>com.squareup.okhttp3</groupId>
-        <artifactId>okhttp</artifactId>
-        <version>4.7.2</version>
-      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>com.squareup.okhttp3</groupId>-->
+<!--        <artifactId>okhttp</artifactId>-->
+<!--        <version>4.7.2</version>-->
+<!--      </dependency>-->
 
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -104,11 +104,11 @@
         <version>3.4.2</version>
       </dependency>
 
-      <dependency>
-        <groupId>com.baomidou</groupId>
-        <artifactId>mybatis-plus</artifactId>
-        <version>3.3.0</version>
-      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>com.baomidou</groupId>-->
+<!--        <artifactId>mybatis-plus</artifactId>-->
+<!--        <version>3.3.0</version>-->
+<!--      </dependency>-->
 
       <dependency>
         <groupId>org.aspectj</groupId>
