@@ -20,11 +20,6 @@ public class SwaggerConfigProperties {
     public static final String PREFIX = "fc.swagger";
 
     /**
-     * 是否开启Swagger，默认关闭
-     */
-    private boolean enable = true;
-
-    /**
      * 作者
      */
     private String author = "fattyca1";
