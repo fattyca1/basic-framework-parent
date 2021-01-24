@@ -18,9 +18,9 @@ public interface BaseErrorCode<T> {
     /**
      * 设置错误码前缀
      *
-     * @param baseErrorCodePrefix 错误码前缀
+     * @param baseCodePrefix 错误码前缀
      */
-    default T setPrefix(BaseErrorCodePrefix<T> baseErrorCodePrefix) {
-        return baseErrorCodePrefix.getPrefix();
+    default T setPrefix(BaseCodePrefix<T> baseCodePrefix) {
+        return baseCodePrefix.getPrefix();
     }
 }
