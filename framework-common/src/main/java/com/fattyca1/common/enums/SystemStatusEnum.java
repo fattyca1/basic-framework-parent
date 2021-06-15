@@ -33,6 +33,11 @@ public enum SystemStatusEnum implements BaseEnum<Integer> {
      * 无效参数
      */
     INVALID_PARAM(400, "无效参数"),
+
+    /**
+     * 登录超时
+     */
+    SESSION_TIMEOUT(401, "登录超时"),
     /**
      * 资源不存在
      **/
@@ -49,7 +54,6 @@ public enum SystemStatusEnum implements BaseEnum<Integer> {
      * 操作成功
      */
     SUCCESS(200, "操作成功");
-
 
     public final Integer code;
     public final String desc;

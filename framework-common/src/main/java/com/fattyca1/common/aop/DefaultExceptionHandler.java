@@ -1,7 +1,16 @@
 package com.fattyca1.common.aop;
 
+import com.fattyca1.common.domain.Result;
+import com.fattyca1.common.enums.SystemStatusEnum;
+import com.fattyca1.common.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * <br>全局异常处理</br>
@@ -22,11 +31,20 @@ public class DefaultExceptionHandler {
      * @param e 业务异常
      * @return 对应结果
      */
-//    @ExceptionHandler(value = BizException.class)
-//    public Result<String> businessExceptionHandler(HttpServletRequest req, BizException e) {
-//        // 已知异常不打印堆栈，避免多余的日志IO输出
-//        return new Result<>(e.getCode(), e.getMessage());
-//    }
+    @ExceptionHandler(value = BizException.class)
+    public ResponseEntity<Result<?>> businessExceptionHandler(HttpServletRequest req, BizException e) {
+        // 已知异常不打印堆栈，避免多余的日志IO输出
+        log.warn("【Exception】, request method:{} ", req.getRequestURI(), e);
+        String errorCode =e.getCode() + "";
+        if (SystemStatusEnum.SESSION_TIMEOUT.getCode().equals(errorCode)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Result.fail(errorCode, e.getMessage()));
+        }
+        if (SystemStatusEnum.DEFAULT_ERR_CODE.getCode().equals(errorCode)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Result.fail(errorCode, e.getMessage()));
+        }
+        errorCode = StringUtils.isBlank(errorCode) ? SystemStatusEnum.DEFAULT_ERR_CODE.getCode() + "": errorCode;
+        return ResponseEntity.ok(Result.fail(errorCode, e.getMessage()));
+    }
 
     /**
      * 未知异常统一捕获
