@@ -17,6 +17,7 @@
     <module>starter-component-redis</module>
     <module>starter-component-httpclient</module>
     <module>starter-component-swagger</module>
+    <module>starter-component-webclient</module>
   </modules>
 
   <dependencies>
