@@ -29,7 +29,8 @@ public class HttpClient5Config {
 
         PoolingAsyncClientConnectionManager build = PoolingAsyncClientConnectionManagerBuilder.create()
                 .setPoolConcurrencyPolicy(PoolConcurrencyPolicy.LAX)  // 2.1
-                .setMaxConnPerRoute(6).build();                       // 2.2
+                .setMaxConnPerRoute(6)                                // 2.2
+                .build();
 
         // 设置Request 操作
         RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
