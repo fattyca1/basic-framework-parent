@@ -2,6 +2,7 @@ package com.fattyca1.common.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -117,6 +118,21 @@ public class JsonUtils {
      */
     public static <T> T toObj(String jsonStr, Class<T> clazz) {
         return convert(jsonStr, clazz, OBJECT_MAPPER::readValue);
+    }
+
+    /**
+     * <br>json2obj(将json串转为对象)</br>
+     *
+     * @param jsonStr, clazz
+     */
+    public static <T> T toObj(String jsonStr, TypeReference<T> clazz) {
+        try {
+            return OBJECT_MAPPER.readValue(jsonStr, clazz);
+        } catch (JsonProcessingException e) {
+            log.error("parse json error. {}", jsonStr);
+        }
+
+        return null;
     }
 
     /**
